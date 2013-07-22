@@ -44,6 +44,9 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import java.lang.reflect.Field;
+import java.io.File;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -128,7 +131,23 @@ public class OpenCV {
 	
 	
 	
-    static{ System.loadLibrary("opencv_java245"); }
+    static{ 
+        System.setProperty( "java.library.path", System.getProperty("java.library.path") + File.pathSeparator + "/usr/local/share/OpenCV/java" );
+        
+        // Workaround so that System.loadLibrary honours the new java.library.path
+        // Because according to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4280189 this property is intended to be read-only
+        try {
+            Field fieldSysPath = ClassLoader.class.getDeclaredField( "sys_paths" );
+            fieldSysPath.setAccessible( true );
+            fieldSysPath.set( null, null );
+        } catch (IllegalAccessException e) {
+            System.out.println("Failed to get permissions to set library path");
+        } catch (NoSuchFieldException e) {
+            System.out.println("Failed to get field handle to set library path");
+        }
+
+        System.loadLibrary("opencv_java245"); 
+    }
 	
     
     /**
